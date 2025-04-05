@@ -25,33 +25,43 @@ axiosInstance.interceptors.response.use(
             return Promise.reject(error);
         }
 
-        // تجاهل طلبات تسجيل الخروج من الاعتراض
-        if (originalRequest.url.includes('/users/logout/blacklist/')) {
-            return Promise.reject(error);
-        }
-
         const isRefreshRequest = originalRequest.url.includes('/users/token/refresh/');
 
         if (error.response.status === 401 && !originalRequest._retry && !isRefreshRequest) {
-            originalRequest._retry = true;
+            originalRequest._retry = true; 
+
+            // ✅ التحقق من وجود refresh_token في الكوكيز
+            // const refreshToken = document.cookie
+            //     .split('; ')
+            //     .find(row => row.startsWith('refresh_token='))
+            //     ?.split('=')[1];
+
+            // if (!refreshToken) {
+            //     console.warn("🚫 لا يوجد refresh_token، التوجيه إلى صفحة تسجيل الدخول.");
+            //     history.push('/login');
+            //     return Promise.reject("🚫 لا يوجد refresh_token");
+            // }
+            // console.log("cookie: ",document.cookie);
 
             try {
-                const response = await axiosInstance.post(
-                    '/users/token/refresh/', 
-                    {}, 
-                    { withCredentials: true }
-                );
+                const response = await axiosInstance.post('/users/token/refresh/', {}, { withCredentials: true });
 
                 if (response.data.access) {
-                    // لا حاجة لإضافة الهيدر يدوياً لأننا نستخدم الكوكيز
+                    axiosInstance.defaults.headers['Authorization'] = `Bearer ${response.data.access}`;
+                    originalRequest.headers['Authorization'] = `Bearer ${response.data.access}`;
+
                     return axiosInstance(originalRequest);
+                } else {
+                    if(!publicPaths.includes(window.location.pathname)){
+                        history.push('/login');
+                    }
+                    return Promise.reject("❌ لم يتم استرجاع access token");
                 }
-            } catch (refreshError) {
-                console.error("Refresh token failed:", refreshError);
-                if (!publicPaths.includes(window.location.pathname)) {
+            } catch (err) {
+                if(!publicPaths.includes(window.location.pathname)){
                     history.push('/login');
                 }
-                return Promise.reject(refreshError);
+                return Promise.reject(err);
             }
         }
 
