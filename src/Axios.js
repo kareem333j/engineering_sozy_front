@@ -82,12 +82,12 @@ axiosInstance.interceptors.response.use(
         }
 
         // معالجة أخطاء أخرى
-        if (error.response.status === 403) {
-            console.error('Forbidden access:', error);
-            if (!publicPaths.includes(window.location.pathname)) {
-                window.location.href = '/login?unauthorized=true';
-            }
-        }
+        // if (error.response.status === 403) {
+        //     console.error('Forbidden access:', error);
+        //     if (!publicPaths.includes(window.location.pathname)) {
+        //         window.location.href = '/login?unauthorized=true';
+        //     }
+        // }
 
         return Promise.reject(error);
     }
