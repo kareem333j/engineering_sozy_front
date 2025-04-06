@@ -3,7 +3,6 @@ import { createBrowserHistory } from 'history';
 
 export const baseURL = "https://engineeringsozy.vercel.app";
 const history = createBrowserHistory();
-
 const publicPaths = ["/", "/login", "/register"];
 
 const axiosInstance = axios.create({
@@ -11,53 +10,65 @@ const axiosInstance = axios.create({
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
-        accept: 'application/json',
+        'Accept': 'application/json',
     },
     withCredentials: true,
 });
 
+// Request interceptor
 axiosInstance.interceptors.request.use(
     (config) => {
-        // لو فيه access_token محفوظ في الكوكيز، ممكن نضيفه هنا لو محتاج (اختياري)
+        // يمكنك إضافة أي headers إضافية هنا إذا لزم الأمر
         return config;
     },
-    (error) => Promise.reject(error)
+    (error) => {
+        console.error('Request error:', error);
+        return Promise.reject(error);
+    }
 );
 
+// Response interceptor
 axiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+        
+        // تجاهل إذا لم يكن هناك response أو إذا كان الطلب إلى refresh token
+        if (!error.response || originalRequest.url.includes('/users/token/refresh/')) {
+            return Promise.reject(error);
+        }
 
-        if (!error.response) return Promise.reject(error);
-
-        const isRefreshRequest = originalRequest.url.includes('/users/token/refresh/');
-
-        if (error.response.status === 401 && !originalRequest._retry && !isRefreshRequest) {
+        // حالة 401 Unauthorized
+        if (error.response.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
-
+            
             try {
-                const response = await axiosInstance.post('/users/token/refresh/', {}, {
-                    withCredentials: true,
-                });
-
-                const access = response?.data?.access;
-                if (access) {
-                    axiosInstance.defaults.headers['Authorization'] = `Bearer ${access}`;
-                    originalRequest.headers['Authorization'] = `Bearer ${access}`;
+                const refreshResponse = await axiosInstance.post(
+                    '/users/token/refresh/', 
+                    {}, 
+                    { withCredentials: true }
+                );
+                
+                if (refreshResponse.status === 200) {
+                    // إعادة الطلب الأصلي بعد تجديد الـ token
                     return axiosInstance(originalRequest);
-                } else {
-                    // مفيش access جديد
-                    if (!publicPaths.includes(window.location.pathname)) {
-                        history.push("/login");
-                    }
-                    return Promise.reject("❌ No access token returned");
                 }
-            } catch (err) {
+            } catch (refreshError) {
+                console.error('Refresh token error:', refreshError);
+                
+                // إذا فشل تجديد الـ token، توجيه إلى صفحة login
                 if (!publicPaths.includes(window.location.pathname)) {
-                    history.push("/login");
+                    window.location.href = '/login?session_expired=true';
                 }
-                return Promise.reject(err);
+                return Promise.reject(refreshError);
+            }
+        }
+
+        // معالجة أخطاء أخرى
+        if (error.response.status === 403) {
+            console.error('Forbidden access:', error);
+            if (!publicPaths.includes(window.location.pathname)) {
+                window.location.href = '/login?unauthorized=true';
             }
         }
 
