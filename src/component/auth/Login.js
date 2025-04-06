@@ -97,7 +97,7 @@ export const Login = () => {
       </Helmet>
 
       <CustomLinearProgress loading={loading} />
-      <div className='login-page d-flex flex-column gap-0'>
+      <div className='login-page d-flex flex-column gap-0 pt-3 pb-5'>
         <img className='p-0' src={Logo} alt="App Logo" style={{ width: 150, marginTop: 5 }} />
         <h3 className='mb-5 fw-bold'>تسجيل الدخول</h3>
         <form onSubmit={submitForm} className="auth-form">
