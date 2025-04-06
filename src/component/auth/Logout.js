@@ -10,7 +10,7 @@ export const Logout = () => {
         const logoutUser = async () => {
             try {
                 // تسجيل الخروج الفعلي و blacklisting للـ refresh token
-                await axiosInstance.post("/users/logout/blacklist/", {}, {
+                await axiosInstance.post("/users/logout/", {}, {
                     withCredentials: true
                 });
 
