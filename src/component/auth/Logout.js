@@ -9,45 +9,30 @@ export const Logout = () => {
     useEffect(() => {
         const logoutUser = async () => {
             try {
-                // 1. إرسال طلب تسجيل الخروج
+                // تسجيل الخروج الفعلي و blacklisting للـ refresh token
                 await axiosInstance.post("/users/logout/blacklist/", {}, {
                     withCredentials: true
                 });
 
-                // 2. حذف الكوكيز محلياً
-                const cookieSettings = [
-                    'path=/',
-                    'domain=yourdomain.com', // استبدل بنطاقك الفعلي
-                    'expires=Thu, 01 Jan 1970 00:00:00 GMT',
-                    'samesite=None',
-                    'secure'
-                ].join('; ');
+                // حذف الكوكيز
+                document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=None";
+                document.cookie = "refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=None";
 
-                document.cookie = `access_token=; ${cookieSettings}`;
-                document.cookie = `refresh_token=; ${cookieSettings}`;
+                // مسح الـ Authorization header
+                delete axiosInstance.defaults.headers.common["Authorization"];
 
-                // 3. إعادة تعيين axios instance
-                delete axiosInstance.defaults.headers.common['Authorization'];
-
-                // 4. التوجيه إلى صفحة تسجيل الدخول
+                // إعادة التوجيه
                 navigate("/login", { replace: true });
 
-            } catch (error) {
-                console.error("Logout error:", error);
-                setError("Failed to logout. Please try again.");
-                
-                // الاستمرار في عملية التنظيف حتى لو فشل الطلب
-                const cookieSettings = [
-                    'path=/',
-                    'domain=yourdomain.com',
-                    'expires=Thu, 01 Jan 1970 00:00:00 GMT',
-                    'samesite=None',
-                    'secure'
-                ].join('; ');
+            } catch (err) {
+                console.error("Logout error:", err);
+                setError("فشل في تسجيل الخروج. حاول مرة أخرى.");
 
-                document.cookie = `access_token=; ${cookieSettings}`;
-                document.cookie = `refresh_token=; ${cookieSettings}`;
-                
+                // تنظيف احتياطي
+                document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=None";
+                document.cookie = "refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=None";
+                delete axiosInstance.defaults.headers.common["Authorization"];
+
                 navigate("/login", { replace: true });
             }
         };
@@ -60,7 +45,7 @@ export const Logout = () => {
             {error ? (
                 <div className="error-message">{error}</div>
             ) : (
-                <div className="logout-message">Logging out...</div>
+                <div className="logout-message">جاري تسجيل الخروج...</div>
             )}
         </div>
     );
