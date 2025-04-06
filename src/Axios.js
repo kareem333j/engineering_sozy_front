@@ -18,7 +18,6 @@ const axiosInstance = axios.create({
 // Request interceptor
 axiosInstance.interceptors.request.use(
     (config) => {
-        // يمكنك إضافة أي headers إضافية هنا إذا لزم الأمر
         return config;
     },
     (error) => {
@@ -33,7 +32,6 @@ axiosInstance.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
         
-        // تجاهل إذا لم يكن هناك response أو إذا كان الطلب إلى refresh token
         if (!error.response || originalRequest.url.includes('/users/token/refresh/')) {
             return Promise.reject(error);
         }
@@ -50,13 +48,11 @@ axiosInstance.interceptors.response.use(
                 );
                 
                 if (refreshResponse.status === 200) {
-                    // إعادة الطلب الأصلي بعد تجديد الـ token
                     return axiosInstance(originalRequest);
                 }
             } catch (refreshError) {
                 console.error('Refresh token error:', refreshError);
                 
-                // إذا فشل تجديد الـ token، توجيه إلى صفحة login
                 if (!publicPaths.includes(window.location.pathname)) {
                     window.location.href = '/login?session_expired=true';
                 }
