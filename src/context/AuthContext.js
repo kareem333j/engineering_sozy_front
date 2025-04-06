@@ -3,6 +3,7 @@ import axiosInstance from "../Axios";
 import { useLocation } from "react-router-dom";
 
 export const AuthContext = createContext();
+const publicPaths = ["/", "/login", "/register"];
 
 export const AuthProvider = ({ children }) => {
   const [authState, setAuthState] = useState({
