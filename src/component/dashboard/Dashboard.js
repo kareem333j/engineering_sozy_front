@@ -187,7 +187,7 @@ export default function Dashboard(props) {
                     }
                 }
             >
-                <PageContainer className="pb-5">
+                <PageContainer sx={{marginBottom:"50px"}}>
                     <Outlet />
                 </PageContainer>
             </DashboardLayout>
