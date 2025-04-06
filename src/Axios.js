@@ -16,15 +16,36 @@ const axiosInstance = axios.create({
 });
 
 // Request interceptor
+// axiosInstance.interceptors.request.use(
+//     (config) => {
+//         return config;
+//     },
+//     (error) => {
+//         console.error('Request error:', error);
+//         return Promise.reject(error);
+//     }
+// );
+
+// Request interceptor
 axiosInstance.interceptors.request.use(
     (config) => {
-        return config;
+      const publicPaths = ["/", "/login", "/register"];
+      const path = new URL(config.baseURL + config.url).pathname;
+  
+      if (publicPaths.includes(path)) {
+        config.withCredentials = false;  
+      } else {
+        config.withCredentials = true;
+      }
+  
+      return config;
     },
     (error) => {
-        console.error('Request error:', error);
-        return Promise.reject(error);
+      console.error('Request error:', error);
+      return Promise.reject(error);
     }
-);
+  );
+  
 
 // Response interceptor
 axiosInstance.interceptors.response.use(
