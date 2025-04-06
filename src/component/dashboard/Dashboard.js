@@ -187,7 +187,7 @@ export default function Dashboard(props) {
                     }
                 }
             >
-                <PageContainer>
+                <PageContainer className="pb-5">
                     <Outlet />
                 </PageContainer>
             </DashboardLayout>
