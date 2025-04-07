@@ -1,10 +1,17 @@
-.login-page, .register-page{
+.login-page,
+.register-page {
     width: 100%;
+    min-height: 100vh;
     height: 100vh;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: flex-start;
     align-items: center;
+    padding: 100px 0 30px 0;
+    overflow-y: auto;
+    box-sizing: border-box;
 }
+
 .auth-form {
     display: flex;
     flex-direction: column;
