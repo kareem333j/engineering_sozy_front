@@ -32,6 +32,7 @@ import logoImage from '../../assets/images/logos/2.png'
 import { NoVideos } from '../no-data/NoVideos';
 import AddIcon from '@mui/icons-material/Add';
 import { Helmet } from 'react-helmet';
+import { SearchField } from '../inputs/CustomFields';
 
 
 function TablePaginationActions(props) {
@@ -293,83 +294,104 @@ export default function AllCourses() {
             .finally(() => setLoading(false));
     }
 
+    const [searchQuery, setSearchQuery] = React.useState('');
+    const handleSearchChange = async (e) => {
+        let value = e.target.value;
+        setSearchQuery(value);
+        setLoading(true);
+        try {
+            const response = await axiosInstance.get(`/api/admin/courses_list/search/`, { params: { value } });
+            setCourseData(response.data);
+        } catch (error) {
+            handleClickVariant('لقد حدث خطأ لايمكن الحصول علي نتيجة', 'error');
+        } finally {
+            setLoading(false);
+        }
+    }
+
     React.useEffect(() => {
         getCourses();
     }, []);
 
-    if (loading) {
-        return <DefaultProgress sx={{ width: '100%', height: '70vh', display: 'flex' }} />
-    }
     return (
         <>
             <Helmet>
                 <title>Engineering Sozy | جميع الكورسات</title>
             </Helmet>
+            <div className='search-container mt-4 mb-4'>
+                <SearchField
+                    label="البحث عن كورس"
+                    placeholder="البحث عن كورس من خلال الإسم"
+                    onChange={handleSearchChange}
+                />
+            </div>
             <CustomLinearProgress loading={loadingDelete} />
             {
-                coursesData.length > 0 ?
-                    <TableContainer component={Paper} dir='rtl' sx={{ minWidth: '1000px' }}>
-                        <Table aria-label="collapsible pagination table" sx={{ minWidth: '100%', backgroundColor: 'var(--main-back3)' }}>
-                            <TableHead>
-                                <TableRow sx={{ backgroundColor: 'var(--main-back)' }}>
-                                    <TableCell />
-                                    <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}><span>اسم الكورس</span></TableCell>
-                                    <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}><span>الحالة</span></TableCell>
-                                    <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}><span>ناريخ النشر</span></TableCell>
-                                    <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}><span>اخر تحديث</span></TableCell>
-                                    <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}><span>عدد الفيديوهات</span></TableCell>
-                                    <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}><span>عدد الطلاب</span></TableCell>
-                                    <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}><span></span></TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {(rowsPerPage > 0
-                                    ? coursesData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                    : coursesData
-                                ).map((row) => (
-                                    <Row
-                                        sx={{ textAlign: 'end' }}
-                                        key={row.id}
-                                        row={row}
-                                        setCurrentCourseIdDeleted={setCurrentCourseIdDeleted}
-                                        setCurrentVideoIdDeleted={setCurrentVideoIdDeleted}
-                                        setOpenAlert={setOpenAlert}
-                                        setAlertOpenedNow={setAlertOpenedNow}
-                                    />
-                                ))}
-                                {emptyRows > 0 && (
-                                    <TableRow style={{ height: 53 * emptyRows }}>
-                                        <TableCell colSpan={8} />
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                            <TableFooter>
-                                <TableRow>
-                                    <TablePagination
-                                        sx={{ direction: 'ltr', fontSize: '1rem !important' }}
-                                        rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
-                                        colSpan={8}
-                                        count={coursesData.length}
-                                        rowsPerPage={rowsPerPage}
-                                        page={page}
-                                        slotProps={{
-                                            select: {
-                                                inputProps: {
-                                                    'aria-label': 'rows per page',
-                                                },
-                                                native: true,
-                                            },
-                                        }}
-                                        onPageChange={handleChangePage}
-                                        onRowsPerPageChange={handleChangeRowsPerPage}
-                                        ActionsComponent={TablePaginationActions}
-                                    />
-                                </TableRow>
-                            </TableFooter>
-                        </Table>
-                    </TableContainer>
+                loading ? <DefaultProgress sx={{ width: '100%', height: '70vh', display: 'flex' }} />
                     :
-                    <NoVideos imgStyle={{ width: '200px' }} msg="لايوجد كورسات حتي الأن" />
+                    coursesData.length > 0 ?
+                        <TableContainer component={Paper} dir='rtl' sx={{ minWidth: '1000px' }}>
+                            <Table aria-label="collapsible pagination table" sx={{ minWidth: '100%', backgroundColor: 'var(--main-back3)' }}>
+                                <TableHead>
+                                    <TableRow sx={{ backgroundColor: 'var(--main-back)' }}>
+                                        <TableCell />
+                                        <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}><span>اسم الكورس</span></TableCell>
+                                        <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}><span>الحالة</span></TableCell>
+                                        <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}><span>ناريخ النشر</span></TableCell>
+                                        <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}><span>اخر تحديث</span></TableCell>
+                                        <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}><span>عدد الفيديوهات</span></TableCell>
+                                        <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}><span>عدد الطلاب</span></TableCell>
+                                        <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}><span></span></TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {(rowsPerPage > 0
+                                        ? coursesData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                        : coursesData
+                                    ).map((row) => (
+                                        <Row
+                                            sx={{ textAlign: 'end' }}
+                                            key={row.id}
+                                            row={row}
+                                            setCurrentCourseIdDeleted={setCurrentCourseIdDeleted}
+                                            setCurrentVideoIdDeleted={setCurrentVideoIdDeleted}
+                                            setOpenAlert={setOpenAlert}
+                                            setAlertOpenedNow={setAlertOpenedNow}
+                                        />
+                                    ))}
+                                    {emptyRows > 0 && (
+                                        <TableRow style={{ height: 53 * emptyRows }}>
+                                            <TableCell colSpan={8} />
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                                <TableFooter>
+                                    <TableRow>
+                                        <TablePagination
+                                            sx={{ direction: 'ltr', fontSize: '1rem !important' }}
+                                            rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
+                                            colSpan={8}
+                                            count={coursesData.length}
+                                            rowsPerPage={rowsPerPage}
+                                            page={page}
+                                            slotProps={{
+                                                select: {
+                                                    inputProps: {
+                                                        'aria-label': 'rows per page',
+                                                    },
+                                                    native: true,
+                                                },
+                                            }}
+                                            onPageChange={handleChangePage}
+                                            onRowsPerPageChange={handleChangeRowsPerPage}
+                                            ActionsComponent={TablePaginationActions}
+                                        />
+                                    </TableRow>
+                                </TableFooter>
+                            </Table>
+                        </TableContainer>
+                        :
+                        <NoVideos imgStyle={{ width: '200px' }} msg={searchQuery ? "لايوجد كورس بهذا الإسم":"لايوجد كورسات حتي الأن"} />
             }
             <div className='actions w-100 d-flex justify-content-end pt-4'>
                 <Button sx={{ fontWeight: 'bold' }} component={Link} to='/courses/add course' variant="outlined" startIcon={<AddIcon />}>

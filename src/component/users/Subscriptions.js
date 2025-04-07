@@ -29,6 +29,7 @@ import BlockIcon from '@mui/icons-material/Block';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import AddIcon from '@mui/icons-material/Add';
 import { Helmet } from 'react-helmet';
+import { SearchField } from '../inputs/CustomFields';
 
 
 function TablePaginationActions(props) {
@@ -92,7 +93,111 @@ TablePaginationActions.propTypes = {
   rowsPerPage: PropTypes.number.isRequired,
 };
 
+const SubscriptionActionsMenu = ({ row, setClickedSubscriptions, setClickAction, setOpenAlert }) => {
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
 
+  const handleClick = (event) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  return (
+    <>
+      <Tooltip title="المزيد">
+        <IconButton
+          aria-label="more"
+          onClick={handleClick}
+          aria-controls={open ? 'subscription-actions-menu' : undefined}
+          aria-haspopup="true"
+          aria-expanded={open ? 'true' : undefined}
+        >
+          <MoreVertIcon />
+        </IconButton>
+      </Tooltip>
+
+      <Menu
+        id="subscription-actions-menu"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        onClick={handleClose}
+        slotProps={{
+          paper: {
+            elevation: 0,
+            sx: {
+              boxShadow: '0px 1px 10px 1px var(--main-shadow)',
+              overflow: 'visible',
+              filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+              mt: 1.5,
+              '& .MuiAvatar-root': {
+                width: 32,
+                height: 32,
+                ml: -0.5,
+                mr: 1,
+              },
+              '&::before': {
+                content: '""',
+                display: 'block',
+                position: 'absolute',
+                top: 0,
+                right: 14,
+                width: 10,
+                height: 10,
+                bgcolor: 'background.paper',
+                transform: 'translateY(-50%) rotate(45deg)',
+                zIndex: 0,
+              },
+            },
+          },
+        }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+      >
+        {row.is_active ? (
+          <MenuItem
+            onClick={() => {
+              setClickedSubscriptions(row.id);
+              setClickAction({ delete: false, activations: true });
+              setOpenAlert(true);
+            }}
+            className='d-flex gap-3 justify-content-end'
+          >
+            إلغاء التفعيل
+            <BlockIcon />
+          </MenuItem>
+        ) : (
+          <MenuItem
+            onClick={() => {
+              setClickedSubscriptions(row.id);
+              setClickAction({ delete: false, activations: true });
+              setOpenAlert(true);
+            }}
+            className='d-flex gap-3 justify-content-end'
+          >
+            تفعيل
+            <CheckCircleIcon />
+          </MenuItem>
+        )}
+        <MenuItem
+          onClick={() => {
+            setClickedSubscriptions(row.id);
+            setClickAction({ delete: true, activations: false });
+            setOpenAlert(true);
+          }}
+          className='d-flex gap-3 justify-content-end'
+        >
+          حذف الإشتراك
+          <DeleteIcon />
+        </MenuItem>
+      </Menu>
+    </>
+  );
+};
 
 export default function Subscriptions() {
   const [loading, setLoading] = React.useState(true);
@@ -104,14 +209,6 @@ export default function Subscriptions() {
     delete: false
   });
 
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const open = Boolean(anchorEl);
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
 
   // pagination
   const [page, setPage] = React.useState(0);
@@ -188,171 +285,119 @@ export default function Subscriptions() {
     }
   }
 
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const handleSearchChange = async (e) => {
+    let value = e.target.value;
+    setSearchQuery(value);
+    setLoading(true);
+    try {
+      const response = await axiosInstance.get(`api/admin/courses/subscriptions/search/`, { params: { value } });
+      setSubscriptions(response.data);
+    } catch (error) {
+      handleClickVariant('لقد حدث خطأ لايمكن الحصول علي نتيجة', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   React.useEffect(() => {
     getSubscriptions();
   }, [])
 
-  if (loading) {
-    return <DefaultProgress sx={{ width: '100%', height: '70vh', display: 'flex' }} />
-  }
   return (
     <>
       <Helmet>
         <title>Engineering Sozy | الإشتراكات</title>
       </Helmet>
+      <div className='search-container mt-4 mb-4'>
+        <SearchField
+          label="البحث عن مشتركين"
+          placeholder="البحث عن مشتركين  (البريد الإلكتروني ، اسم المستخدم ، ID)  "
+          onChange={handleSearchChange}
+        />
+      </div>
       <CustomLinearProgress loading={loadingUpdate} />
       {
-        subscriptions.length > 0 ?
-          <TableContainer className='table-container' component={Paper} dir='rtl' sx={{ width: '100%', overflowX: 'auto' }}>
-            <Table aria-label="collapsible pagination table" sx={{ width: '100%', backgroundColor: 'var(--main-back3)' }}>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: 'var(--main-back)' }}>
-                  <TableCell />
-                  <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}><span>المشترك</span></TableCell>
-                  <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap', color: 'var(--main-blue-sky)' }}><span>ID</span></TableCell>
-                  <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}><span>الكورس</span></TableCell>
-                  <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}><span>ناريخ إنشاء الإشتراك</span></TableCell>
-                  <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}><span>الحالة</span></TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {(rowsPerPage > 0
-                  ? subscriptions.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  : subscriptions
-                ).map((row, i) => (
-                  <TableRow key={i} sx={{ '& > *': { borderBottom: 'unset' }, backgroundColor: 'var(--main-back)' }} colSpan={9}>
-                    <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} align="right">
-                      <Tooltip title="المزيد"
-                        id="demo-positioned-button"
-                        aria-expanded={open ? 'true' : undefined}
-                        onClick={handleClick}
-                        aria-controls={open ? 'account-menu' : undefined}
-                        aria-haspopup="true"
-                      >
-                        <IconButton aria-label="more">
-                          <MoreVertIcon />
-                        </IconButton>
-                      </Tooltip>
+        loading ? <DefaultProgress sx={{ width: '100%', height: '70vh', display: 'flex' }} />
 
-                      <Menu
-                        anchorEl={anchorEl}
-                        id="account-menu"
-                        open={open}
-                        onClose={handleClose}
-                        onClick={handleClose}
-                        slotProps={{
-                          paper: {
-                            elevation: 0,
-                            sx: {
-                              boxShadow: '0px 1px 10px 1px var(--main-shadow)',
-                              overflow: 'visible',
-                              filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
-                              mt: 1.5,
-                              '& .MuiAvatar-root': {
-                                width: 32,
-                                height: 32,
-                                ml: -0.5,
-                                mr: 1,
-                              },
-                              '&::before': {
-                                content: '""',
-                                display: 'block',
-                                position: 'absolute',
-                                top: 0,
-                                right: 14,
-                                width: 10,
-                                height: 10,
-                                bgcolor: 'background.paper',
-                                transform: 'translateY(-50%) rotate(45deg)',
-                                zIndex: 0,
-                              },
-                            },
-                          },
-                        }}
-                        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                      >
-                        {
-                          row.is_active ?
-                            <MenuItem onClick={() => {
-                              setClickedSubscriptions(row.id);
-                              handleClose();
-                              setClickAction({ delete: false, activations: true });
-                              setOpenAlert(true);
-                            }} className='d-flex gap-3 justify-content-end'>
-                              إلغاء التفعيل
-                              <BlockIcon />
-                            </MenuItem>
-                            :
-                            <MenuItem onClick={() => {
-                              setClickedSubscriptions(row.id);
-                              handleClose();
-                              setClickAction({ delete: false, activations: true });
-                              setOpenAlert(true);
-                            }} className='d-flex gap-3 justify-content-end'>
-                              تفعيل
-                              <CheckCircleIcon />
-                            </MenuItem>
-                        }
-
-
-                        <MenuItem onClick={() => {
-                          setClickedSubscriptions(row.id);
-                          handleClose();
-                          setClickAction({ delete: true, activations: false });
-                          setOpenAlert(true);
-                        }} className='d-flex gap-3 justify-content-end'>
-                          حذف الإشتراك
-                          <DeleteIcon />
-                        </MenuItem>
-                      </Menu>
-                    </TableCell>
-                    <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} component="th" scope="row" align="right">
-                      {row.user.full_name.length > 0 ? row.user.full_name : 'لايوجد إسم'}
-                    </TableCell>
-                    <TableCell sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }} component="th" scope="row" align="right">
-                      <Link style={{ color: 'var(--main-blue-sky)' }} to={`/profile/${row.user.profile_id}`}>{row.user.profile_id}@</Link>
-                    </TableCell>
-                    <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} align="right"><span>{row.course}</span></TableCell>
-                    <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} align="right"><span>{formatDate(row.created_dt)}</span></TableCell>
-                    <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} align="right">{
-                      row.is_active ? <span className='bg-success px-4 text-white' style={{ borderRadius: '5px' }}>مفعل</span> : <span className='bg-secondary text-white px-4' style={{ borderRadius: '5px' }}>غير مفعل</span>
-                    }</TableCell>
-                  </TableRow>
-                ))}
-                {emptyRows > 0 && (
-                  <TableRow style={{ height: 53 * emptyRows }}>
-                    <TableCell colSpan={6} />
-                  </TableRow>
-                )}
-              </TableBody>
-              <TableFooter>
-                <TableRow>
-                  <TablePagination
-                    sx={{ direction: 'ltr', fontSize: '1rem !important' }}
-                    rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
-                    colSpan={10}
-                    count={subscriptions.length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    slotProps={{
-                      select: {
-                        inputProps: {
-                          'aria-label': 'rows per page',
-                        },
-                        native: true,
-                      },
-                    }}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                    ActionsComponent={TablePaginationActions}
-                  />
-                </TableRow>
-              </TableFooter>
-            </Table>
-          </TableContainer>
           :
-          <NoVideos imgStyle={{ width: '200px' }} msg="لايوجد  إشتراكات حتي الأن" />
+          subscriptions.length > 0 ?
+            <TableContainer className='table-container' component={Paper} dir='rtl' sx={{ width: '100%', overflowX: 'auto' }}>
+              <Table aria-label="collapsible pagination table" sx={{ width: '100%', backgroundColor: 'var(--main-back3)' }}>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: 'var(--main-back)' }}>
+                    <TableCell />
+                    <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap', color: 'var(--main-blue-sky)' }}><span>البريد الإلكتروني</span></TableCell>
+                    <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}><span>إسم المشترك</span></TableCell>
+                    <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap', color: 'var(--main-blue-sky)' }}><span>ID</span></TableCell>
+                    <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}><span>الكورس</span></TableCell>
+                    <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}><span>ناريخ إنشاء الإشتراك</span></TableCell>
+                    <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}><span>الحالة</span></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {(rowsPerPage > 0
+                    ? subscriptions.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    : subscriptions
+                  ).map((row, i) => (
+                    <TableRow key={i} sx={{ '& > *': { borderBottom: 'unset' }, backgroundColor: 'var(--main-back)' }} colSpan={9}>
+                      <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} align="right">
+                        <SubscriptionActionsMenu
+                          row={row}
+                          setClickedSubscriptions={setClickedSubscriptions}
+                          setClickAction={setClickAction}
+                          setOpenAlert={setOpenAlert}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }} component="th" scope="row" align="right">
+                        <Link style={{ color: 'var(--main-blue-sky)' }} to={`/profile/${row.user.profile_id}`}>{row.user.email}</Link>
+                      </TableCell>
+                      <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} component="th" scope="row" align="right">
+                        {row.user.full_name.length > 0 ? row.user.full_name : 'لايوجد إسم'}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }} component="th" scope="row" align="right">
+                        <Link style={{ color: 'var(--main-blue-sky)' }} to={`/profile/${row.user.profile_id}`}>{row.user.profile_id}@</Link>
+                      </TableCell>
+                      <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} align="right"><span>{row.course}</span></TableCell>
+                      <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} align="right"><span>{formatDate(row.created_dt)}</span></TableCell>
+                      <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} align="right">{
+                        row.is_active ? <span className='bg-success px-4 text-white' style={{ borderRadius: '5px' }}>مفعل</span> : <span className='bg-secondary text-white px-4' style={{ borderRadius: '5px' }}>غير مفعل</span>
+                      }</TableCell>
+                    </TableRow>
+                  ))}
+                  {emptyRows > 0 && (
+                    <TableRow style={{ height: 53 * emptyRows }}>
+                      <TableCell colSpan={6} />
+                    </TableRow>
+                  )}
+                </TableBody>
+                <TableFooter>
+                  <TableRow>
+                    <TablePagination
+                      sx={{ direction: 'ltr', fontSize: '1rem !important' }}
+                      rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
+                      colSpan={10}
+                      count={subscriptions.length}
+                      rowsPerPage={rowsPerPage}
+                      page={page}
+                      slotProps={{
+                        select: {
+                          inputProps: {
+                            'aria-label': 'rows per page',
+                          },
+                          native: true,
+                        },
+                      }}
+                      onPageChange={handleChangePage}
+                      onRowsPerPageChange={handleChangeRowsPerPage}
+                      ActionsComponent={TablePaginationActions}
+                    />
+                  </TableRow>
+                </TableFooter>
+              </Table>
+            </TableContainer>
+            :
+            <NoVideos imgStyle={{ width: '200px' }} msg={searchQuery ? "لا يوجد مشتركين بهذه المعلومات" : "ل ايوجد  إشتراكات حتي الأن"} />
       }
       <div className='actions w-100 d-flex justify-content-end pt-4'>
         <Button component={Link} to='add' sx={{ fontWeight: 'bold' }} variant="outlined" startIcon={<AddIcon />}>
