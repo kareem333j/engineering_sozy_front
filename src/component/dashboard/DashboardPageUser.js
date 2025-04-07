@@ -48,7 +48,7 @@ export const DashboardPageUser = () => {
   else {
     if (coursesData.length <= 0) {
       return (
-        <NoVideos imgStyle={{ width: '200px' }} msg="you don't have courses now..!" />
+        <NoVideos imgStyle={{ width: '200px' }} msg="لم يتم إضافتك في اي كورس حتي الأن..!" />
       )
     }
     return (

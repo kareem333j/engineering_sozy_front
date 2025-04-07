@@ -254,10 +254,7 @@ export default function Profile() {
                     }
                     {
                         (
-                            // الطالب داخل على ملفه الشخصي
                             (isMyProfile && profileData.is_staff === "False" && profileData.is_superuser === "False") ||
-
-                            // staff أو superuser داخل على بروفايل طالب
                             (
                                 !isMyProfile &&
                                 (user.user.profile.is_staff === "True" || user.user.profile.is_superuser === "True") &&
@@ -265,13 +262,13 @@ export default function Profile() {
                                 profileData.is_superuser === "False"
                             )
                         ) &&
-                        courses.length > 0 &&
+                        profileData.subscribed_courses.length > 0 &&
                         <div className="profile-section courses-info fade-in">
                             <h2 className="section-title">الكورسات</h2>
                             <ul className="courses-list">
-                                {courses.map((course, index) => (
+                                {profileData.subscribed_courses.map((course, index) => (
                                     <li key={index} className="course-item" style={{ fontSize: '1.2rem' }}>
-                                        {course}
+                                        {course.title}
                                     </li>
                                 ))}
                             </ul>

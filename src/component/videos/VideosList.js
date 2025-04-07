@@ -44,8 +44,8 @@ function Media({ videos, data_loading, ...props }) {
                   <Typography className='d-flex align-items-center gap-2 mb-1' variant="caption" sx={{ display: 'block', fontSize:'0.9em', color: 'text.secondary' }}>
                     <Avatar sx={{ width: 22, height: 22 }} src={item.author.avatar} />{item.author.full_name ? item.author.full_name : item.author.profile_id}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                    {`${item.more_info.views.length} views • ${formatYoutubeTime(item.created_dt)}`}
+                  <Typography dir={'rtl'} variant="caption" sx={{ color: 'text.secondary' }}>
+                    {`${item.more_info.views.length} مشاهدة • ${formatYoutubeTime(item.created_dt)}`}
                   </Typography>
                 </Box>
               ) : (

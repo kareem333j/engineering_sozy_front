@@ -297,8 +297,8 @@ export default function VideoPage() {
                   <div className='d-flex flex-column'>
                     <p className='title'>{recommend.title}</p>
                     <span className='author'>{recommend.author}</span>
-                    <Typography className='more-info' variant="caption" sx={{ color: 'text.secondary' }}>
-                      {`${recommend.more_info.views.length} views • ${formatYoutubeTime(recommend.created_dt)}`}
+                    <Typography dir={'rtl'} className='more-info' variant="caption" sx={{ color: 'text.secondary' }}>
+                      {`${recommend.more_info.views.length} مشاهدة • ${formatYoutubeTime(recommend.created_dt)}`}
                     </Typography>
                   </div>
                 </Link>

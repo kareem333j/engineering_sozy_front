@@ -73,3 +73,24 @@ export const CustomSelectField = (props) => {
         </FormControl>
     )
 }
+
+export function SearchField(props) {
+    return (
+        <TextField
+            dir='rtl'
+            label={props.label}
+            variant="outlined"
+            value={props.value}
+            onChange={props.onChange}
+            fullWidth
+            placeholder={props.placeholder}
+            InputProps={{
+                startAdornment: (
+                    <InputAdornment sx={{ marginRight: '20px' }} position="start">
+                        <SearchIcon />
+                    </InputAdornment>
+                ),
+            }}
+        />
+    );
+}
