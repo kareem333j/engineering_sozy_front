@@ -12,13 +12,8 @@ import { Helmet } from 'react-helmet';
 
 export const Register = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-
-  // snackbar
   const { enqueueSnackbar } = useSnackbar();
-  const handleClickVariant = (msg, variant) => {
-    enqueueSnackbar(msg, { variant, anchorOrigin: { vertical: "top", horizontal: "right" } });
-  };
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -28,50 +23,75 @@ export const Register = () => {
   });
 
   const [formErrors, setFormErrors] = useState({
-    full_name: { error: false, msg: "" },
-    email: { error: false, msg: "" },
-    password: { error: false, msg: "" },
-    password2: { error: false, msg: "" },
+    full_name: "",
+    email: "",
+    password: "",
+    password2: "",
   });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    formValidation();
+  const handleClickVariant = (msg, variant) => {
+    enqueueSnackbar(msg, {
+      variant,
+      anchorOrigin: { vertical: "top", horizontal: "right" }
+    });
   };
 
-  const formValidation = () => {
-    let errors = { full_name: {}, email: {}, password: {}, password2: {} };
-    let isValid = true;
+  const validateField = (name, value) => {
+    switch (name) {
+      case 'full_name':
+        return value.trim().length < 3 ? "الاسم بالكامل يجب أن يكون 3 أحرف على الأقل" : "";
+      case 'email':
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return !emailRegex.test(value) ? "البريد الإلكتروني غير صالح" : "";
+      case 'password':
+        return value.length < 8 ? "كلمة المرور يجب أن تكون 8 أحرف على الأقل" : "";
+      case 'password2':
+        return value !== formData.password ? "كلمات المرور غير متطابقة" : "";
+      default:
+        return "";
+    }
+  };
 
-    if (formData.full_name.trim().length < 3) {
-      errors.full_name = { error: true, msg: "الاسم بالكامل يجب أن يكون 3 أحرف على الأقل" };
-      isValid = false;
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    setFormErrors((prev) => ({
+      ...prev,
+      [name]: validateField(name, value),
+      ...(name === 'password' && {
+        password2: validateField('password2', formData.password2),
+      }),
+    }));
+  };
+
+  const isFormValid = () => {
+    const newErrors = {};
+    for (let key in formData) {
+      const errorMsg = validateField(key, formData[key]);
+      if (errorMsg) newErrors[key] = errorMsg;
     }
 
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(formData.email)) {
-      errors.email = { error: true, msg: "البريد الإلكتروني غير صالح" };
-      isValid = false;
-    }
+    setFormErrors({
+      full_name: newErrors.full_name || "",
+      email: newErrors.email || "",
+      password: newErrors.password || "",
+      password2: newErrors.password2 || "",
+    });
 
-    if (formData.password.length < 8) {
-      errors.password = { error: true, msg: "كلمة المرور يجب أن تكون 8 أحرف على الأقل" };
-      isValid = false;
-    }
-
-    if (formData.password !== formData.password2) {
-      errors.password2 = { error: true, msg: "كلمات المرور غير متطابقة" };
-      isValid = false;
-    }
-
-    setFormErrors(errors);
-    return isValid;
+    return Object.keys(newErrors).length === 0;
   };
 
   const submitForm = (e) => {
     e.preventDefault();
-    if (formValidation()) {
+    if (isFormValid()) {
       sendForm();
+    } else {
+      handleClickVariant('من فضلك صحح الأخطاء في النموذج', 'error');
     }
   };
 
@@ -83,18 +103,24 @@ export const Register = () => {
         navigate('/login');
       })
       .catch((err) => {
-        if (err.response && err.response.data) {
+        if (err.response?.data) {
           const serverErrors = err.response.data;
-          let newErrors = { full_name: {}, email: {}, password: {}, password2: {} };
+          const newErrors = { ...formErrors };
 
           for (let key in serverErrors) {
-            if (formErrors[key] !== undefined) {
-              newErrors[key] = { error: true, msg: serverErrors[key][0] };
+            if (newErrors[key] !== undefined) {
+              newErrors[key] = serverErrors[key][0];
             }
           }
+
           setFormErrors(newErrors);
+
+          if (serverErrors.non_field_errors) {
+            handleClickVariant(serverErrors.non_field_errors[0], 'error');
+          }
         }
-        if (err.status === 400 || err.status === 401) {
+
+        if (err.response?.status === 400 || err.response?.status === 401) {
           handleClickVariant('لم يتم إنشاء الحساب راجع بياناتك', 'error');
         } else {
           handleClickVariant('لقد حدث خطأ', 'error');
@@ -109,14 +135,18 @@ export const Register = () => {
         <title>Engineering Sozy | تسجيل حساب جديد</title>
       </Helmet>
       <CustomLinearProgress loading={loading} />
-      <div className='register-page d-flex flex-column gap-0 pt-3 pb-5'>
+      <div className='register-page d-flex flex-column gap-0'>
         <img className='p-0' src={Logo} alt="App Logo" style={{ width: 150, marginTop: 5 }} />
         <h3 className='mb-5 fw-bold'>تسجيل حساب جديد</h3>
         <form onSubmit={submitForm} className="auth-form">
           {['full_name', 'email', 'password', 'password2'].map((field, index) => (
             <div key={index}>
               <div className="flex-column mb-2">
-                <label>{field === 'full_name' ? 'الإسم بالكامل' : field === 'email' ? 'البريد الإلكتروني' : field === 'password' ? 'كلمة المرور' : 'تأكيد كلمة المرور'}</label>
+                <label>
+                  {field === 'full_name' ? 'الإسم بالكامل' :
+                    field === 'email' ? 'البريد الإلكتروني' :
+                      field === 'password' ? 'كلمة المرور' : 'تأكيد كلمة المرور'}
+                </label>
               </div>
               <div className="inputForm mb-1">
                 {
@@ -126,18 +156,26 @@ export const Register = () => {
                 }
                 <input
                   onChange={handleChange}
-                  placeholder={field === 'full_name' ? 'ادخل اسمك' : field === 'email' ? 'ادخل البريد الإلكتروني' : 'ادخل كلمة المرور'}
+                  placeholder={
+                    field === 'full_name' ? 'ادخل اسمك' :
+                      field === 'email' ? 'ادخل البريد الإلكتروني' :
+                        'ادخل كلمة المرور'
+                  }
                   className="input"
                   type={field.includes('password') ? 'password' : 'text'}
                   name={field}
                   value={formData[field]}
                 />
               </div>
-              {formErrors[field]?.error && <p className='text-danger'>{formErrors[field].msg}</p>}
+              {formErrors[field] && <p className='text-danger'>{formErrors[field]}</p>}
             </div>
           ))}
-          <button className="button-submit">إشتراك</button>
-          <p className="p">امتلك حساب بالفعل؟ <span className="span"><Link to='/login'>تسجيل الدخول</Link></span></p>
+          <button className="button-submit" disabled={loading}>
+            {loading ? 'جارٍ التسجيل...' : 'إشتراك'}
+          </button>
+          <p className="p">
+            امتلك حساب بالفعل؟ <span className="span"><Link to='/login'>تسجيل الدخول</Link></span>
+          </p>
         </form>
       </div>
     </>

@@ -6,7 +6,6 @@ import { CommentForm } from '../../comment/CommentForm';
 import axiosInstance from '../../../Axios';
 import { VideoMainData } from './VideoMainData';
 import Comment from '../../comment/CommentBody';
-import ImageNotSupportedIcon from '@mui/icons-material/ImageNotSupported';
 import formatYoutubeTime from '../../date-time/formatYoutubeTime';
 import { Error } from '../../no-data/Error';
 import { Error404 } from '../../no-data/Error404';
@@ -16,6 +15,8 @@ import { Error403 } from '../../no-data/Error403';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import logoImage from '../../../assets/images/logos/2.png';
 import { Helmet } from 'react-helmet';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
 
 export default function VideoPage() {
   const { id: video_id } = useParams();
@@ -284,10 +285,28 @@ export default function VideoPage() {
     if (videoData.recommendations.length > 0) {
       return (
         <div className="video-suggestions">
-          <h3>فيديوهات مقترحة</h3>
+          <h3 dir='rtl' style={{ backgroundColor: 'var(--suggestions-title-back)', borderRadius: '5px 5px 0 0' }} className='w-100 py-3 px-3 m-0 d-flex flex-column gap-2'>
+            <span style={{ fontSize: '1.5rem' }}>
+              <PlaylistPlayIcon sx={{ marginLeft: '5px' }} />
+              {videoData.recommendations[0]?.course_name}
+            </span>
+            <span dir='rtl' style={{ fontSize: '1rem' }}>
+              <span style={{color:'var(--main-50)'}}> {videoData?.mainData?.priority}/{videoData.recommendations.length} </span>
+                - 
+              <span> {videoData.recommendations[0]?.author} </span>
+            </span>
+          </h3>
           <ul>
             {videoData.recommendations.map((recommend) => (
-              <li key={recommend.id}>
+              <li className={videoData?.mainData?.id === recommend.id ? 'active':''} key={recommend.id}>
+                <div className='priority-num'>
+                  {
+                    videoData?.mainData?.id === recommend.id ?
+                      <PlayArrowIcon />
+                      :
+                      recommend.priority
+                  }
+                </div>
                 <Link to={`/courses/${recommend.course_name}/${recommend.id}`}>
                   {recommend.cover ? (
                     <div className='recommend-img'><img src={recommend.cover} alt="Video" /></div>
@@ -304,6 +323,7 @@ export default function VideoPage() {
                 </Link>
               </li>
             ))}
+            
           </ul>
         </div>
       );
@@ -326,7 +346,7 @@ export default function VideoPage() {
   return (
     <div className='w-100'>
       <Helmet>
-        <title>Engineering Sozy | مشاهدة فيديو - {videoData.mainData.title}</title>
+        <title>Engineering Sozy | مشاهدة فيديو </title>
       </Helmet>
       {renderBreadcrumbs()}
 

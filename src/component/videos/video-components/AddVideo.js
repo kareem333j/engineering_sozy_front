@@ -22,10 +22,12 @@ export default function AddVideo() {
         description: '',
         videoEmbed: '',
         is_active: true,
+        priority: 1,
     });
     const [formErrors, setFormErrors] = useState({
         title: { catch: false, msg: '' },
         course: { catch: false, msg: '' },
+        priority: { catch: false, msg: '' },
         videoEmbed: { catch: false, msg: '' },
     });
     const imageRef = useRef();
@@ -34,10 +36,11 @@ export default function AddVideo() {
         const errors = {
             title: updatedForm.title.trim() ? { catch: false, msg: '' } : { catch: true, msg: 'عنوان الفيديو مطلوب' },
             course: updatedForm.course ? { catch: false, msg: '' } : { catch: true, msg: 'يجب اختيار الكورس التابع له الفيديو' },
+            priority: updatedForm.priority > 0 ? { catch: false, msg: '' } : { catch: true, msg: 'لا يمكن ان تكون اولوية الفيديو اقل من صفر' },
             videoEmbed: updatedForm.videoEmbed.trim() ? { catch: false, msg: '' } : { catch: true, msg: 'كود الفيديو مطلوب' },
         };
         setFormErrors(errors);
-        setSendButtonDisabled(errors.title.catch || errors.videoEmbed.catch || errors.course.catch);
+        setSendButtonDisabled(errors.title.catch || errors.videoEmbed.catch || errors.course.catch || errors.priority.catch);
     };
 
     const handleFormChange = (e) => {
@@ -89,6 +92,7 @@ export default function AddVideo() {
         formData.append('course', dataForm.course);
         formData.append('is_active', dataForm.is_active);
         formData.append('embed_code', dataForm.videoEmbed);
+        formData.append('priority', dataForm.priority?dataForm.priority:1);
 
         if (dataForm.cover instanceof File) {
             formData.append('cover', dataForm.cover);
@@ -107,6 +111,7 @@ export default function AddVideo() {
                     description: '',
                     videoEmbed: '',
                     is_active: true,
+                    priority:1
                 });
                 setSendButtonDisabled(true);
             })
@@ -195,6 +200,18 @@ export default function AddVideo() {
                             onChange={handleFormChange}
                             error={formErrors.videoEmbed.catch}
                             helperText={formErrors.videoEmbed.msg}
+                            sx={{ width: '100%' }}
+                        />
+                        <CustomTextField
+                            required
+                            label='أولوية الفديو'
+                            value={dataForm.priority}
+                            inputProps = {{min:1}}
+                            name='priority'
+                            type='number'
+                            onChange={handleFormChange}
+                            error={formErrors.priority.catch}
+                            helperText={formErrors.priority.msg}
                             sx={{ width: '100%' }}
                         />
 

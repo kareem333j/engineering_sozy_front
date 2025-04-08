@@ -13,7 +13,7 @@ import { AuthContext } from "../../context/AuthContext";
 import axiosInstance from "../../Axios";
 import { useSnackbar } from "notistack";
 
-export default function Comment({ comment_id, author, video_id, is_liked_by_user, time, isChild = false, content, likes, replies = [], replies_count = 0, changeCommentCount, getComments = () => { } }) {
+export default function Comment({ comment_id, author, video_id, is_liked_by_user, time, isChild = false, content, likes, replies = [], replies_count = 0, changeCommentCount, getComments }) {
     const { user, loading } = useContext(AuthContext);
     const [expanded, setExpanded] = useState(false);
     const [expandedReplays, setExpandedReplays] = useState(false);
@@ -28,6 +28,7 @@ export default function Comment({ comment_id, author, video_id, is_liked_by_user
     const handleReplyAdded = (newReply) => {
         setRepliesList((prev) => [newReply, ...prev]);
         setRepliesCountDefault(repliesCountDefault + 1);
+        getComments();
     };
 
     // snackbar

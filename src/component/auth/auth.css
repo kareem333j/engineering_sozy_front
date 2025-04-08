@@ -90,10 +90,12 @@
     width: 100%;
     cursor: pointer;
 }
-.auth-form .button-submit.not-active{
+
+.auth-form .button-submit.not-active {
     opacity: 0.6;
     cursor: no-drop;
 }
+
 .auth-form .p {
     text-align: center;
     color: black;
@@ -127,6 +129,7 @@
         border: 0;
     }
 }
+
 @media (max-width: 600px) {
     .auth-form {
         width: 100%;

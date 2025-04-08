@@ -1,6 +1,6 @@
 import { FormControl, FormHelperText, InputAdornment, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 
 export const CustomTextField = (props) => {
     return (
@@ -15,6 +15,8 @@ export const CustomTextField = (props) => {
             sx={props.sx}
             error={props.error}
             helperText={props.helperText}
+            type={props.type}
+            inputProps={props.inputProps}
         />
     )
 }

@@ -86,7 +86,11 @@ body {
     border-radius: 15px;
     background-color: var(--main-color-3);
 }
-
+.video-suggestions{
+    border: 0.1px solid var(--main-border);
+    border-radius: 5px;
+    padding: 0 0 10px 0;
+}
 .video-suggestions ul {
     list-style: none;
     padding: 0;
@@ -95,12 +99,24 @@ body {
 .video-suggestions li {
     align-items: center;
     overflow: hidden;
+    display: flex;
+    gap: 5px;
+}
+.video-suggestions li .priority-num{
+    width: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.video-suggestions li.active{
+    background-color: var(--playlist-active-obj);
 }
 .video-suggestions li a {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
+    margin-top: 10px;
     overflow: hidden;
     color: var(--main-color);
 }

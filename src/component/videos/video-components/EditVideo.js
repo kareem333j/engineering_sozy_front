@@ -4,7 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import formatYoutubeTime from '../../date-time/formatYoutubeTime';
 import './edit-video.css';
 import axiosInstance from '../../../Axios';
-import { CustomTextAreaField, CustomTextField } from '../../inputs/CustomFields';
+import { CustomSelectField, CustomTextAreaField, CustomTextField } from '../../inputs/CustomFields';
 import AddIcon from '@mui/icons-material/Add';
 import { Error } from '../../no-data/Error';
 import DefaultProgress from '../../progress/Default';
@@ -22,25 +22,46 @@ export default function EditVideo() {
     const [sendButtonDisabled, setSendButtonDisabled] = useState(true);
     const [dataForm, setDataForm] = useState({
         title: '',
+        course: '',
         cover: null,
         description: '',
         videoEmbed: '',
         is_active: true,
+        priority: 1,
     });
     const [formErrors, setFormErrors] = useState({
         title: { catch: false, msg: '' },
         videoEmbed: { catch: false, msg: '' },
+        priority: { catch: false, msg: '' },
+        course: { catch: false, msg: '' },
     });
     const imageRef = useRef();
 
     const checkFormErrors = (updatedForm) => {
         const errors = {
             title: updatedForm.title.trim() ? { catch: false, msg: '' } : { catch: true, msg: 'عنوان الفيديو مطلوب' },
+            course: updatedForm.course ? { catch: false, msg: '' } : { catch: true, msg: 'يجب اختيار الكورس التابع له الفيديو' },
             videoEmbed: updatedForm.videoEmbed.trim() ? { catch: false, msg: '' } : { catch: true, msg: 'كود الفيديو مطلوب' },
+            priority: updatedForm.priority > 0 ? { catch: false, msg: '' } : { catch: true, msg: 'لا يمكن ان تكون اولوية الفيديو اقل من صفر' },
         };
         setFormErrors(errors);
-        setSendButtonDisabled(errors.title.catch || errors.videoEmbed.catch);
+        setSendButtonDisabled(errors.title.catch || errors.videoEmbed.catch || errors.course.catch || errors.priority.catch);
     };
+
+    // 
+    const [allCourses, setAllCourses] = React.useState([]);
+    const getAllCourses = React.useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await axiosInstance.get('/api/admin/courses_list/options');
+            setAllCourses(response.data);
+        } catch (error) {
+            console.error('Error fetching courses:', error);
+        }
+        finally {
+            setLoading(false);
+        }
+    }, []);
 
     const handleFormChange = (e) => {
         const { name, value, files } = e.target;
@@ -58,10 +79,12 @@ export default function EditVideo() {
             setVideoData(data);
             const initialForm = {
                 title: data.title || '',
+                course: data.course || '',
                 cover: data.cover || null,
                 description: data.description || '',
                 videoEmbed: data.embed_code || '',
-                is_active: data.is_active
+                is_active: data.is_active,
+                priority: data.priority || 1
             };
             setDataForm(initialForm);
             checkFormErrors(initialForm);
@@ -84,9 +107,11 @@ export default function EditVideo() {
         setSendLoading(true);
         const formData = new FormData();
         formData.append('title', dataForm.title);
+        formData.append('course', dataForm.course);
         formData.append('description', dataForm.description);
         formData.append('is_active', dataForm.is_active);
         formData.append('embed_code', dataForm.videoEmbed);
+        formData.append('priority', dataForm.priority ? dataForm.priority : 0);
 
         if (dataForm.cover instanceof File) {
             formData.append('cover', dataForm.cover);
@@ -114,7 +139,8 @@ export default function EditVideo() {
 
     useEffect(() => {
         getVideoMainData();
-    }, [getVideoMainData]);
+        getAllCourses();
+    }, [getVideoMainData,getAllCourses]);
 
     if (loading) {
         return <DefaultProgress sx={{ width: '100%', minHeight: '70vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }} />
@@ -175,7 +201,7 @@ export default function EditVideo() {
                 </div>
 
                 <div className="form-box">
-                    <form className="form-container d-flex gap-4" onSubmit={handleFormSubmit}>
+                    <form className="form-container d-flex gap-4 justify-content-center align-items-center" onSubmit={handleFormSubmit}>
                         <Typography variant="h6">Edit Video Details</Typography>
                         <CustomTextField
                             required
@@ -185,6 +211,17 @@ export default function EditVideo() {
                             onChange={handleFormChange}
                             error={formErrors.title.catch}
                             helperText={formErrors.title.msg}
+                            sx={{ width: '100%' }}
+                        />
+                        <CustomSelectField
+                            data={allCourses}
+                            value={dataForm.course}
+                            handleChange={handleFormChange}
+                            label="اختيار الكورس"
+                            name="course"
+                            required={true}
+                            error={formErrors.course.catch}
+                            helperText={formErrors.course.msg}
                         />
                         <CustomTextAreaField
                             label='الوصف'
@@ -192,6 +229,7 @@ export default function EditVideo() {
                             value={dataForm.description}
                             name='description'
                             onChange={handleFormChange}
+                            sx={{ width: '100%' }}
                         />
                         <CustomTextAreaField
                             required
@@ -202,6 +240,19 @@ export default function EditVideo() {
                             onChange={handleFormChange}
                             error={formErrors.videoEmbed.catch}
                             helperText={formErrors.videoEmbed.msg}
+                            sx={{ width: '100%' }}
+                        />
+                        <CustomTextField
+                            required
+                            label='أولوية الفديو'
+                            value={dataForm.priority}
+                            inputProps={{ min: 1 }}
+                            name='priority'
+                            type='number'
+                            onChange={handleFormChange}
+                            error={formErrors.priority.catch}
+                            helperText={formErrors.priority.msg}
+                            sx={{ width: '100%' }}
                         />
                         <input ref={imageRef} name='cover' onChange={handleFormChange} type="file" accept="image/*" hidden />
                         <CustomSwitchFiled

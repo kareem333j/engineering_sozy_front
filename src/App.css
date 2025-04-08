@@ -24,6 +24,9 @@
     --main-blue-sky: #1565C0;
     --scrollbar-color: #b4b4b49e;
     --main-hover: rgba(141, 141, 141, 0.288);
+    --playlist-active-obj: #90caf97b;
+    --suggestions-title-back:#2121212e;
+    --main-border: #c3c3c3a2;
 }
 .dark{
     --main-color: #fff;
@@ -40,6 +43,8 @@
     --main-blue-sky: #90CAF9;
     --scrollbar-color: #3e3e3e;
     --main-hover: rgba(255, 255, 255, 0.133);
+    --suggestions-title-back:rgba(37, 36, 36, 0.784);
+    --main-border: #c3c3c32b;
 }
 html,body {
     font-size: 14px;

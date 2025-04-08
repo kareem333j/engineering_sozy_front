@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import './auth.css';
 import { Link, useNavigate } from 'react-router-dom';
 import Logo from '../../assets/images/logos/1.png';
@@ -11,13 +11,8 @@ import { Helmet } from 'react-helmet';
 
 export const Login = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-
-  // snackbar
   const { enqueueSnackbar } = useSnackbar();
-  const handleClickVariant = (msg, variant) => {
-    enqueueSnackbar(msg, { variant, anchorOrigin: { vertical: "top", horizontal: "right" } });
-  };
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -25,70 +20,81 @@ export const Login = () => {
   });
 
   const [formErrors, setFormErrors] = useState({
-    email: { error: false, msg: "" },
-    password: { error: false, msg: "" },
+    email: "",
+    password: "",
   });
 
+  const handleClickVariant = (msg, variant) => {
+    enqueueSnackbar(msg, {
+      variant,
+      anchorOrigin: { vertical: "top", horizontal: "right" }
+    });
+  };
+
+  const validateField = (name, value) => {
+    switch (name) {
+      case 'email':
+        if (!value.trim()) return "البريد الإلكتروني مطلوب";
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(value)) return "البريد الإلكتروني غير صالح";
+        return "";
+      case 'password':
+        if (!value.trim()) return "كلمة المرور مطلوبة";
+        return "";
+      default:
+        return "";
+    }
+  };
+
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
+    const { name, value } = e.target;
 
-      [e.target.name]: e.target.value,
-    })
-  }
+    setFormData(prev => ({ ...prev, [name]: value }));
 
-  const formValidation = () => {
-    let errors = {
-      email: { error: false, msg: "" },
-      password: { error: false, msg: "" },
+    // فورًا نتحقق من صحة الحقل عند التغيير
+    const errorMsg = validateField(name, value);
+    setFormErrors(prev => ({ ...prev, [name]: errorMsg }));
+  };
+
+  const isFormValid = () => {
+    const errors = {
+      email: validateField("email", formData.email),
+      password: validateField("password", formData.password),
     };
-
-    // check password
-    if (formData.password.length <= 0) {
-      errors.password = { error: true, msg: "كلمة المرور مطلوبة" };
-    }
-
-    // check email
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (formData.email.length <= 0) {
-      errors.email = { error: true, msg: "البريد الإلكتروني مطلوب" };
-    } else if (!emailRegex.test(formData.email)) {
-      errors.email = { error: true, msg: "بريد خطأ" };
-    }
 
     setFormErrors(errors);
 
-    if (!errors.email.error && !errors.password.error) {
-      sendForm();
-    }
-  }
+    return !errors.email && !errors.password;
+  };
 
   const submitForm = (e) => {
     e.preventDefault();
-    formValidation();
-  }
+    if (isFormValid()) {
+      sendForm();
+    } else {
+      handleClickVariant("يرجى تصحيح الأخطاء قبل المتابعة", "error");
+    }
+  };
 
   const sendForm = () => {
     setLoading(true);
     axiosInstance
-      .post('/users/token/', {
-        email: formData.email,
-        password: formData.password,
-      }).then((res) => {
+      .post('/users/token/', formData)
+      .then((res) => {
         handleClickVariant('تم تسجيل الدخول بنجاح', 'success');
         navigate('/dashboard');
       })
       .catch((err) => {
-        if (err.status === 401) {
-          handleClickVariant('البريد الإلكتروني او كلمة المرور خطأ', 'error');
-        } else if (err.status === 403) {
+        if (err.response?.status === 401 || err.response?.status === 400) {
+          handleClickVariant('البريد الإلكتروني أو كلمة المرور غير صحيحة', 'error');
+        } else if (err.response?.data?.error) {
           handleClickVariant(err.response.data.error, 'error');
         } else {
-          handleClickVariant('لقد حدث خطأ ما  ', 'error');
+          handleClickVariant('حدث خطأ غير متوقع', 'error');
         }
       })
-      .finally((() => setLoading(false)))
-  }
+      .finally(() => setLoading(false));
+  };
 
   return (
     <>
@@ -97,47 +103,55 @@ export const Login = () => {
       </Helmet>
 
       <CustomLinearProgress loading={loading} />
-      <div className='login-page d-flex flex-column gap-0 pt-3 pb-5'>
+
+      <div className='login-page d-flex flex-column gap-0'>
         <img className='p-0' src={Logo} alt="App Logo" style={{ width: 150, marginTop: 5 }} />
         <h3 className='mb-5 fw-bold'>تسجيل الدخول</h3>
         <form onSubmit={submitForm} className="auth-form">
-          <div className="flex-column">
-            <label>البريد الإلكتروني </label></div>
-          <div className="inputForm">
+          
+          {/* البريد الإلكتروني */}
+          <div className="flex-column mb-2">
+            <label>البريد الإلكتروني</label>
+          </div>
+          <div className="inputForm mb-1">
             <AlternateEmailIcon />
             <input
-              onChange={handleChange}
+              name="email"
+              type="email"
               placeholder="ادخل البريد الإلكتروني"
               className="input"
-              name='email'
-              type="email"
               value={formData.email}
+              onChange={handleChange}
             />
           </div>
-          {formErrors.email.error ? <p className='text-danger'>{formErrors.email.msg}</p> : null}
+          {formErrors.email && <p className='text-danger'>{formErrors.email}</p>}
 
-          <div className="flex-column">
-            <label>كلمة المرور </label></div>
-          <div className="inputForm">
+          {/* كلمة المرور */}
+          <div className="flex-column mb-2 mt-3">
+            <label>كلمة المرور</label>
+          </div>
+          <div className="inputForm mb-1">
             <HttpsOutlinedIcon />
             <input
-              onChange={handleChange}
+              name="password"
+              type="password"
               placeholder="ادخل كلمة المرور"
               className="input"
-              name='password'
-              type="password"
               value={formData.password}
+              onChange={handleChange}
             />
           </div>
-          {formErrors.password.error ? <p className='text-danger'>{formErrors.password.msg}</p> : null}
+          {formErrors.password && <p className='text-danger'>{formErrors.password}</p>}
 
-          <div className="flex-row">
-            {/* <span className="span">نسيت كلمة المرور ؟</span> */}
-          </div>
-          <button className="button-submit">تسجيل</button>
-          <p className="p">لا امتلك حساب <span className="span"><Link to='/register'>تسجيل حساب جديد</Link></span></p>
+          <button className="button-submit" disabled={loading}>
+            {loading ? "جارٍ تسجيل الدخول..." : "تسجيل"}
+          </button>
+
+          <p className="p">
+            لا امتلك حساب؟ <span className="span"><Link to='/register'>تسجيل حساب جديد</Link></span>
+          </p>
         </form>
       </div>
     </>
-  )
-}
+  );
+};

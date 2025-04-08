@@ -16,7 +16,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import axiosInstance from '../../Axios';
 import { formatDate } from '../date-time/defaultDateFormat';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Button, TableFooter, TablePagination, Tooltip, useTheme } from '@mui/material';
+import { Button, Stack, TableFooter, TablePagination, Tooltip, useTheme } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import { Link } from 'react-router-dom';
 import Confirm from '../dialogs/DialogForm_1';
@@ -33,6 +33,8 @@ import { NoVideos } from '../no-data/NoVideos';
 import AddIcon from '@mui/icons-material/Add';
 import { Helmet } from 'react-helmet';
 import { SearchField } from '../inputs/CustomFields';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
 
 function TablePaginationActions(props) {
@@ -100,6 +102,7 @@ function Row(props) {
     const { row } = props;
     const [open, setOpen] = React.useState(false);
 
+
     return (
         <React.Fragment>
             <TableRow sx={{ '& > *': { borderBottom: 'unset' }, backgroundColor: 'var(--main-back)' }}>
@@ -112,17 +115,17 @@ function Row(props) {
                         {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                     </IconButton>
                 </TableCell>
-                <TableCell sx={{ fontSize: '1.1rem' }} component="th" scope="row" align="right">
+                <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} component="th" scope="row" align="right">
                     {row.title}
                 </TableCell>
-                <TableCell sx={{ fontSize: '1.1rem' }} align="right">{
+                <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} align="right">{
                     row.is_active ? <span className='bg-success px-4 text-white' style={{ borderRadius: '5px' }}>نشط</span> : <span className='bg-secondary text-white px-4' style={{ borderRadius: '5px' }}>غير نشط</span>
                 }</TableCell>
-                <TableCell sx={{ fontSize: '1.1rem' }} align="right"><span>{formatDate(row.created_dt)}</span></TableCell>
-                <TableCell sx={{ fontSize: '1.1rem' }} align="right"><span>{formatDate(row.update_dt)}</span></TableCell>
-                <TableCell sx={{ fontSize: '1.1rem' }} align="right"><span>{row.videos.length}</span></TableCell>
-                <TableCell sx={{ fontSize: '1.1rem' }} align="right"><span>{row.subscribers.length}</span></TableCell>
-                <TableCell sx={{ fontSize: '1.1rem' }} align="right">
+                <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} align="right"><span>{formatDate(row.created_dt)}</span></TableCell>
+                <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} align="right"><span>{formatDate(row.update_dt)}</span></TableCell>
+                <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} align="right"><span>{row.videos.length}</span></TableCell>
+                <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} align="right"><span>{row.subscribers.length}</span></TableCell>
+                <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} align="right">
                     <Tooltip component={Link} to={`/courses/course/${row.id}/edit`} title="تعديل">
                         <IconButton aria-label="edit">
                             <EditIcon />
@@ -140,7 +143,7 @@ function Row(props) {
                 </TableCell>
             </TableRow>
             <TableRow>
-                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={8}>
+                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={10}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         {
                             row.videos.length === 0 ? <Box className='w-100 text-end m-2' style={{ fontSize: '1.2rem' }}>لا يوجد فيديوهات في هذا االكورس</Box>
@@ -152,68 +155,103 @@ function Row(props) {
                                     <Table size="small" aria-label="purchases">
                                         <TableHead>
                                             <TableRow>
-                                                <TableCell sx={{ fontSize: '1.1rem', fontWeight: 'bold' }} align="right"><span>#</span></TableCell>
+                                                <TableCell sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }} align="right"><span>أولوية الفيديو</span></TableCell>
                                                 <TableCell />
-                                                <TableCell sx={{ fontSize: '1.1rem', fontWeight: 'bold' }} align="right"><span>اسم الفيديو</span></TableCell>
-                                                <TableCell sx={{ fontSize: '1.1rem' }} align="right"><span>الحالة</span></TableCell>
-                                                <TableCell sx={{ fontSize: '1.1rem' }} align="right"><span>تاريخ النشر</span></TableCell>
-                                                <TableCell sx={{ fontSize: '1.1rem' }} align="right"><span>اخر تحديث</span></TableCell>
-                                                <TableCell sx={{ fontSize: '1.1rem' }} align="right"><span>عدد الإعجابات</span></TableCell>
-                                                <TableCell sx={{ fontSize: '1.1rem' }} align="right"><span>عدد المشاهدات</span></TableCell>
+                                                <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap', fontWeight: 'bold' }} align="right"><span>اسم الفيديو</span></TableCell>
+                                                <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} align="right"><span>الحالة</span></TableCell>
+                                                <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} align="right"><span>تاريخ النشر</span></TableCell>
+                                                <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} align="right"><span>اخر تحديث</span></TableCell>
+                                                <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} align="right"><span>عدد الإعجابات</span></TableCell>
+                                                <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} align="right"><span>عدد المشاهدات</span></TableCell>
                                                 <TableCell />
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                            {row.videos.map((video, i) => (
-                                                <TableRow key={video.id}>
-                                                    <TableCell sx={{ fontSize: '1.1rem' }} component="th" scope="row" align="right">{i}</TableCell>
-                                                    <TableCell sx={{ fontSize: '1.1rem' }} component="th" scope="row" align="right">
-                                                        <div className='video-container'>
-                                                            {
-                                                                video.cover ? <img width='100px' src={video.cover} alt='video-cover' />
-                                                                    :
-                                                                    <div style={{ backgroundColor: 'rgba(128, 128, 128, 0.605)' }} className='no-image d-flex justify-content-center align-items-center py-3'>
-                                                                        <img width='30px' src={logoImage} alt='video-cover' />
-                                                                    </div>
-                                                            }
-
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell sx={{ fontSize: '1.1rem' }} component="th" scope="row" align="right">
-                                                        <span>{video.title}</span>
-                                                    </TableCell>
-                                                    <TableCell sx={{ fontSize: '1.1rem' }} component="th" scope="row" align="right">
-                                                        {
-                                                            video.is_active ? <span className='bg-success px-4 text-white' style={{ borderRadius: '5px' }}>نشط</span> : <span className='bg-secondary text-white px-4' style={{ borderRadius: '5px' }}>غير نشط</span>
+                                            {row.videos.map((video, i) => {
+                                                const handleSwap = async (direction) => {
+                                                    try {
+                                                        const response = await axiosInstance.post(
+                                                            `/api/admin/video/${video.id}/swap-priority/`,
+                                                            { direction },
+                                                        );
+                                                        if (response.status === 200) {
+                                                            props.getCourses();
+                                                            props.handleClickVariant('تم تبديل الفيديو بنجاح', 'success');
                                                         }
-                                                    </TableCell>
-                                                    <TableCell sx={{ fontSize: '1.1rem' }} component="th" scope="row" align="right">{formatDate(video.created_dt)}</TableCell>
-                                                    <TableCell sx={{ fontSize: '1.1rem' }} component="th" scope="row" align="right">{formatDate(video.update_dt)}</TableCell>
-                                                    <TableCell sx={{ fontSize: '1.1rem' }} component="th" scope="row" align="right">{video.likes_count}</TableCell>
-                                                    <TableCell sx={{ fontSize: '1.1rem' }} component="th" scope="row" align="right">{video.more_info.views.length}</TableCell>
-                                                    <TableCell sx={{ fontSize: '1.1rem' }} align="right">
-                                                        <Tooltip component={Link} to={`/courses/${row.title}/${video.id}`} title="مشاهدة">
-                                                            <IconButton aria-label="edit">
-                                                                <PlayCircleIcon />
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                        <Tooltip component={Link} to={`/courses/${row.title}/${video.id}/edit`} title="تعديل">
-                                                            <IconButton aria-label="edit">
-                                                                <EditIcon />
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                        <Tooltip title="حذف" onClick={() => {
-                                                            props.setCurrentVideoIdDeleted(video.id);
-                                                            props.setAlertOpenedNow({ course: false, video: true });
-                                                            props.setOpenAlert(true);
-                                                        }}>
-                                                            <IconButton aria-label="delete">
-                                                                <DeleteIcon />
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
+                                                    } catch (error) {
+                                                        props.handleClickVariant('لقد حدث خطأ', 'error');
+                                                    } finally{setOpen(true)};
+                                                };
+                                                return (
+                                                    <TableRow key={video.id}>
+                                                        <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }} component="th" scope="row" align="left">
+                                                            <Stack direction="column" spacing={0}>
+                                                                <IconButton
+                                                                    onClick={() => handleSwap('up')}
+                                                                    disabled={video.priority === 1}
+                                                                    color="primary"
+                                                                >
+                                                                    <ArrowUpwardIcon />
+                                                                </IconButton>
+                                                                <IconButton
+                                                                    onClick={() => handleSwap('down')}
+                                                                    disabled={video.priority === row.videos.length}
+                                                                    color="primary"
+                                                                >
+                                                                    <ArrowDownwardIcon />
+                                                                </IconButton>
+                                                            </Stack>
+                                                            {video.priority}
+                                                        </TableCell>
+                                                        <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} component="th" scope="row" align="right">
+                                                            <div className='video-container'>
+                                                                {
+                                                                    video.cover ? <img width='100px' src={video.cover} alt='video-cover' />
+                                                                        :
+                                                                        <div style={{ backgroundColor: 'rgba(128, 128, 128, 0.605)' }} className='no-image d-flex justify-content-center align-items-center py-3'>
+                                                                            <img width='30px' src={logoImage} alt='video-cover' />
+                                                                        </div>
+                                                                }
+
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} component="th" scope="row" align="right">
+                                                            <span>{video.title}</span>
+                                                        </TableCell>
+                                                        <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} component="th" scope="row" align="right">
+                                                            {
+                                                                video.is_active ? <span className='bg-success px-4 text-white' style={{ borderRadius: '5px' }}>نشط</span> : <span className='bg-secondary text-white px-4' style={{ borderRadius: '5px' }}>غير نشط</span>
+                                                            }
+                                                        </TableCell>
+                                                        <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} component="th" scope="row" align="right">{formatDate(video.created_dt)}</TableCell>
+                                                        <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} component="th" scope="row" align="right">{formatDate(video.update_dt)}</TableCell>
+                                                        <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} component="th" scope="row" align="right">{video.likes_count}</TableCell>
+                                                        <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} component="th" scope="row" align="right">{video.more_info.views.length}</TableCell>
+                                                        <TableCell sx={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }} align="right">
+                                                            <Tooltip component={Link} to={`/courses/${row.title}/${video.id}`} title="مشاهدة">
+                                                                <IconButton aria-label="edit">
+                                                                    <PlayCircleIcon />
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                            <Tooltip component={Link} to={`/courses/${row.title}/${video.id}/edit`} title="تعديل">
+                                                                <IconButton aria-label="edit">
+                                                                    <EditIcon />
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                            <Tooltip title="حذف" onClick={() => {
+                                                                props.setCurrentVideoIdDeleted(video.id);
+                                                                props.setAlertOpenedNow({ course: false, video: true });
+                                                                props.setOpenAlert(true);
+                                                            }}>
+                                                                <IconButton aria-label="delete">
+                                                                    <DeleteIcon />
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )
+                                            }
+                                            )}
                                         </TableBody>
                                     </Table>
                                 </Box>
@@ -335,13 +373,13 @@ export default function AllCourses() {
                                 <TableHead>
                                     <TableRow sx={{ backgroundColor: 'var(--main-back)' }}>
                                         <TableCell />
-                                        <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}><span>اسم الكورس</span></TableCell>
-                                        <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}><span>الحالة</span></TableCell>
-                                        <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}><span>ناريخ النشر</span></TableCell>
-                                        <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}><span>اخر تحديث</span></TableCell>
-                                        <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}><span>عدد الفيديوهات</span></TableCell>
-                                        <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}><span>عدد الطلاب</span></TableCell>
-                                        <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold' }}><span></span></TableCell>
+                                        <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}><span>اسم الكورس</span></TableCell>
+                                        <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}><span>الحالة</span></TableCell>
+                                        <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}><span>ناريخ النشر</span></TableCell>
+                                        <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}><span>اخر تحديث</span></TableCell>
+                                        <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}><span>عدد الفيديوهات</span></TableCell>
+                                        <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}><span>عدد الطلاب</span></TableCell>
+                                        <TableCell align="right" sx={{ fontSize: '1.1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}><span></span></TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -357,6 +395,8 @@ export default function AllCourses() {
                                             setCurrentVideoIdDeleted={setCurrentVideoIdDeleted}
                                             setOpenAlert={setOpenAlert}
                                             setAlertOpenedNow={setAlertOpenedNow}
+                                            getCourses={getCourses}
+                                            handleClickVariant={handleClickVariant}
                                         />
                                     ))}
                                     {emptyRows > 0 && (
@@ -391,7 +431,7 @@ export default function AllCourses() {
                             </Table>
                         </TableContainer>
                         :
-                        <NoVideos imgStyle={{ width: '200px' }} msg={searchQuery ? "لايوجد كورس بهذا الإسم":"لايوجد كورسات حتي الأن"} />
+                        <NoVideos imgStyle={{ width: '200px' }} msg={searchQuery ? "لايوجد كورس بهذا الإسم" : "لايوجد كورسات حتي الأن"} />
             }
             <div className='actions w-100 d-flex justify-content-end pt-4'>
                 <Button sx={{ fontWeight: 'bold' }} component={Link} to='/courses/add course' variant="outlined" startIcon={<AddIcon />}>
