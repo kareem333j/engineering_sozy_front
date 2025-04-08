@@ -1,4 +1,4 @@
-import { FormControl, FormHelperText, InputAdornment, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { Autocomplete, FormControl, FormHelperText, InputAdornment, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import React, { useState } from 'react';
 
@@ -63,7 +63,7 @@ export const CustomSelectField = (props) => {
                     props.data.map((item) => {
                         if (props.is_users) {
                             return (
-                                <MenuItem dir='rtl' key={item.profile_id} value={item.profile_id}>{item.full_name} - {item.profile_id}</MenuItem>
+                                <MenuItem dir='rtl' key={item.profile_id} value={item.profile_id}>{item.full_name} - {item.email}</MenuItem>
                             )
                         }
                         return (
@@ -76,6 +76,49 @@ export const CustomSelectField = (props) => {
         </FormControl>
     )
 }
+
+export const CustomAutocompleteField = (props) => {
+    return (
+        <FormControl error={props.error} sx={{ m: 1, width: '100%' }}>
+            <Autocomplete
+                options={props.data}
+                getOptionLabel={(option) =>
+                    props.is_users
+                        ? `${option.full_name} - ${option.email}`
+                        : option.title || ""
+                }
+                value={props.data.find(
+                    (item) =>
+                        item.id === props.value || item.profile_id === props.value
+                ) || null}
+                onChange={(event, newValue) =>
+                    props.handleChange({
+                        target: {
+                            name: props.name,
+                            value: newValue
+                                ? (props.is_users ? newValue.profile_id : newValue.id)
+                                : "",
+                        },
+                    })
+                }
+                renderInput={(params) => (
+                    <TextField
+                        {...params}
+                        label={props.label}
+                        required={props.required}
+                        error={props.error}
+                        helperText={props.helperText}
+                    />
+                )}
+                isOptionEqualToValue={(option, value) =>
+                    props.is_users
+                        ? option.profile_id === value.profile_id
+                        : option.id === value.id
+                }
+            />
+        </FormControl>
+    );
+};
 
 export function SearchField(props) {
     return (

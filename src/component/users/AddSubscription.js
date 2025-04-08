@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import CustomLinearProgress from '../progress/LinerProgress';
 import CustomSwitchFiled from '../inputs/SwitchButton';
-import { CustomSelectField } from '../inputs/CustomFields';
+import { CustomAutocompleteField, CustomSelectField } from '../inputs/CustomFields';
 import axiosInstance from '../../Axios';
 import DefaultProgress from '../progress/Default';
 import { Helmet } from 'react-helmet';
@@ -55,6 +55,7 @@ export const AddSubscription = () => {
         };
         setFormErrors(errors);
         setSendButtonDisabled(errors.user.catch || errors.course.catch);
+        return errors.user.catch || errors.course.catch;
     };
 
     const handleFormChange = (e) => {
@@ -67,31 +68,32 @@ export const AddSubscription = () => {
     };
 
     const sendForm = () => {
-        setLoading(true);
         const formData = new FormData();
         formData.append('profile_id', dataSubscription.user);
         formData.append('course', dataSubscription.course);
         formData.append('is_active', JSON.stringify(dataSubscription.is_active));
-        console.log(formData);
 
-        axiosInstance.post(`api/admin/courses/subscriptions/add/`, formData)
-            .then(() => {
-                handleClickVariant('تم إضافة الإشتراك بنجاح', 'success');
-                setDataSubscription({
-                    user: "",
-                    course: "",
-                    is_active: true
+        if (!checkFormErrors(dataSubscription)) {
+            setLoading(true);
+            axiosInstance.post(`api/admin/courses/subscriptions/add/`, formData)
+                .then(() => {
+                    handleClickVariant('تم إضافة الإشتراك بنجاح', 'success');
+                    setDataSubscription({
+                        user: "",
+                        course: "",
+                        is_active: true
+                    })
+                    setSendButtonDisabled(true);
                 })
-                setSendButtonDisabled(true);
-            })
-            .catch((err) => {
-                if (err.status === 400) {
-                    handleClickVariant(err.response.data.detail, 'error');
-                } else {
-                    handleClickVariant('لقد حدث خطأ', 'error');
-                }
-            })
-            .finally(() => { setLoading(false) });
+                .catch((err) => {
+                    if (err.status === 400) {
+                        handleClickVariant(err.response.data.detail, 'error');
+                    } else {
+                        handleClickVariant('لقد حدث خطأ', 'error');
+                    }
+                })
+                .finally(() => { setLoading(false) });
+        }
     }
 
     const handleFormSubmit = (e) => {
@@ -138,7 +140,7 @@ export const AddSubscription = () => {
             <div className="form-box w-100">
                 <form className="form-container d-flex flex-column gap-1 mt-5 justify-content-center align-items-center" onSubmit={handleFormSubmit}>
                     <Typography className='w-100 text-end' variant="h6">إضافة مشترك جديد</Typography>
-                    <CustomSelectField
+                    <CustomAutocompleteField
                         data={allUsers}
                         value={dataSubscription.user}
                         handleChange={handleFormChange}
@@ -149,7 +151,7 @@ export const AddSubscription = () => {
                         helperText={formErrors.user.msg}
                         is_users={true}
                     />
-                    <CustomSelectField
+                    <CustomAutocompleteField
                         data={allCourses}
                         value={dataSubscription.course}
                         handleChange={handleFormChange}

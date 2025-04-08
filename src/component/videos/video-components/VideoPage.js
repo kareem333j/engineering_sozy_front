@@ -291,14 +291,14 @@ export default function VideoPage() {
               {videoData.recommendations[0]?.course_name}
             </span>
             <span dir='rtl' style={{ fontSize: '1rem' }}>
-              <span style={{color:'var(--main-50)'}}> {videoData?.mainData?.priority}/{videoData.recommendations.length} </span>
+              <span style={{color:'var(--main-50)'}}> {videoData.recommendations.findIndex(item => item.id === videoData.mainData.id)+1}/{videoData.recommendations.length} </span>
                 - 
               <span> {videoData.recommendations[0]?.author} </span>
             </span>
           </h3>
           <ul>
             {videoData.recommendations.map((recommend) => (
-              <li className={videoData?.mainData?.id === recommend.id ? 'active':''} key={recommend.id}>
+              <li style={{backgroundColor:!recommend.is_active&&'#ed555582'}} className={`${videoData?.mainData?.id === recommend.id ? 'active ':''}${!recommend.is_active&&'not-active position-relative'}`} key={recommend.id}>
                 <div className='priority-num'>
                   {
                     videoData?.mainData?.id === recommend.id ?

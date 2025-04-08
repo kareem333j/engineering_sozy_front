@@ -12,7 +12,7 @@ import Paper from '@mui/material/Paper';
 import axiosInstance from '../../Axios';
 import { formatDate } from '../date-time/defaultDateFormat';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Avatar, Button, Dialog, DialogActions, DialogContent, DialogTitle, Menu, MenuItem, TableFooter, TablePagination, TextField, Tooltip, useTheme } from '@mui/material';
+import { Avatar, Button, Dialog, DialogActions, DialogContent, DialogTitle, Menu, MenuItem, Stack, TableFooter, TablePagination, TextField, Tooltip, useTheme } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import { Link } from 'react-router-dom';
 import Confirm from '../dialogs/DialogForm_1';
@@ -31,6 +31,7 @@ import { EditAccount } from '../dialogs/EditAccount';
 import { AuthContext } from '../../context/AuthContext';
 import { Helmet } from 'react-helmet';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
+import DoDisturbIcon from '@mui/icons-material/DoDisturb';
 import { SearchField } from '../inputs/CustomFields';
 
 function TablePaginationActions(props) {
@@ -159,34 +160,34 @@ const UserActionsMenu = ({ row, handleOpenForm, handleOpenFormChangePassword, se
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem 
+        <MenuItem
           onClick={(e) => {
             handleOpenFormChangePassword(row.profile.profile_id);
-          }} 
+          }}
           className='d-flex gap-3 justify-content-end'
         >
           تغيير كلمة المرور
           <VpnKeyIcon />
         </MenuItem>
-        <MenuItem 
+        <MenuItem
           onClick={(e) => {
             handleOpenForm(
-              row.profile.profile_id, 
-              row.is_superuser, 
-              row.is_staff, 
+              row.profile.profile_id,
+              row.is_superuser,
+              row.is_staff,
               row.profile.is_active
             );
-          }} 
+          }}
           className='d-flex gap-3 justify-content-end'
         >
           تعديل صلاحيات
           <EditIcon />
         </MenuItem>
-        <MenuItem 
+        <MenuItem
           onClick={() => {
             setClickedUser(row.profile.profile_id);
             setOpenAlert(true);
-          }} 
+          }}
           className='d-flex gap-3 justify-content-end'
         >
           حذف الحساب
@@ -372,19 +373,53 @@ export default function ManageUsers() {
   const changePassword = async () => {
     setLoadingUpdate(true);
     const formData = new FormData();
-    formData.append('password',dataPasswords.password);
-    formData.append('password2',dataPasswords.password2);
+    formData.append('password', dataPasswords.password);
+    formData.append('password2', dataPasswords.password2);
     try {
       const response = await axiosInstance.post(`/users/admin/reset-password/${clickedUser}/`, formData);
-      if(response.status === 200){
+      if (response.status === 200) {
         handleClickVariant('تم تحديث كلمة المرور بنجاح', 'success');
         handleCloseEditPasswordForm();
-      }else{
+      } else {
         handleClickVariant('لقد حدث خطأ', 'error');
       }
     } catch (err) {
       handleClickVariant('لقد حدث خطأ لم يتم تحديث كلمة المرور', 'error');
     } finally { setLoadingUpdate(false); }
+  }
+
+  // actions to all users
+  const [openAlertAllActions, setOpenAlertAllActions] = React.useState(false);
+  const [clickedAction, setClickedAction] = React.useState(false);
+  const handleClickedActionToAll = (type)=>{
+    setClickedAction(type === 'delete'?'delete':type === 'deActivate'?'deActivate':null);
+    setOpenAlertAllActions(true);
+  }
+  const actionToAllUsers = async (type) => {
+    setLoadingUpdate(true);
+    if (type === 'delete') {
+      try {
+        await axiosInstance.delete('/users/all/delete/');
+        handleClickVariant('تم حذف جميع الطلاب بنجاح', 'success');
+        getUsers();
+      } catch {
+        handleClickVariant('لقد حدث خطأ', 'error');
+      } finally {
+        setLoadingUpdate(false);
+      }
+    } else if (type === 'deActivate') {
+      try {
+        await axiosInstance.post('/users/all/deactivate/');
+        handleClickVariant('تم إلغاء تفعيل جميع الطلاب بنجاح', 'success');
+        getUsers();
+      } catch {
+        handleClickVariant('لقد حدث خطأ', 'error');
+      } finally {
+        setLoadingUpdate(false);
+      }
+    } else {
+      return;
+    }
   }
 
   React.useEffect(() => {
@@ -509,6 +544,14 @@ export default function ManageUsers() {
                       </TableFooter>
                     </Table>
                   </TableContainer>
+                  <Stack direction="row" spacing={0} sx={{ width: '100%', marginTop: '15px', display: 'flex', gap: '10px', justifyContent: 'end' }}>
+                    <Button onClick={()=>handleClickedActionToAll('delete')} sx={{ fontSize: '1rem' }} dir='ltr' variant="outlined" color="error" startIcon={<DeleteIcon />}>
+                      حذف الكل
+                    </Button>
+                    <Button onClick={()=>handleClickedActionToAll('deActivate')} sx={{ fontWeight: 'bold' }} variant="contained" startIcon={<DoDisturbIcon />}>
+                      إلغاء تفعيل الكل
+                    </Button>
+                  </Stack>
                 </>
                 :
                 <NoVideos imgStyle={{ width: '200px' }} msg={searchQuery ? "لا يوجد مستخدمين بهذه المعلومات" : "لا يوجد مستخدمين حتى الآن"} />
@@ -570,6 +613,18 @@ export default function ManageUsers() {
               message={`هل متأكد من حذف الحساب "${usersData.length > 0 ? usersData.find(user => user.profile.profile_id === clickedUser)?.profile?.full_name : 'غير معرف'}"`}
               cancelTitle="إلغاء"
               confirmTitle="نعم،حذف"
+            />
+            <Confirm
+              open={openAlertAllActions}
+              onConfirm={() => {
+                setOpenAlertAllActions(false);
+                clickedAction === 'delete'?actionToAllUsers('delete'):clickedAction === 'deActivate'&&actionToAllUsers('deActivate');
+              }}
+              onClose={() => setOpenAlertAllActions(false)}
+              title={clickedAction === 'delete'?"حذف جميع المستخدمين":clickedAction === 'deActivate'&&"إلغاء تفعيل جميع المستخدمين"}
+              message={clickedAction === 'delete'?"هل متأكد من حذف جميع المستخدمين بإستثناء المسؤلين والمساعدين ؟":clickedAction === 'deActivate'&&"هل متأكد من إلغاء تفعيل جميع المستخدمين بإستثناء المسؤلين والمساعدين ؟"}
+              cancelTitle="إلغاء"
+              confirmTitle="نعم"
             />
           </>
       }

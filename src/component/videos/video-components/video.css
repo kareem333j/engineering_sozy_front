@@ -111,6 +111,15 @@ body {
 .video-suggestions li.active{
     background-color: var(--playlist-active-obj);
 }
+.video-suggestions li.not-active::before{
+    content: '';
+    position: absolute;
+    width: 100%;
+    top: 50%;
+    left: 0;
+    background-color: #000000b0;
+    height: 1px;
+}
 .video-suggestions li a {
     display: flex;
     align-items: center;
