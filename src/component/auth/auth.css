@@ -11,6 +11,10 @@
     overflow-y: auto;
     box-sizing: border-box;
 }
+.register-page{
+    height: 120vh;
+    padding: 100px 0 60px 0;
+}
 
 .auth-form {
     display: flex;
