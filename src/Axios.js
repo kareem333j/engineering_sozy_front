@@ -5,31 +5,64 @@ export const baseURL = "https://engineeringsozy.vercel.app";
 const history = createBrowserHistory();
 const publicPaths = ["/", "/login", "/register"];
 
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+
 const axiosInstance = axios.create({
     baseURL: baseURL,
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
     },
     withCredentials: true,
 });
 
 
 // Request interceptor
+// axiosInstance.interceptors.request.use(
+//     (config) => {
+//         let fullUrl = config.url.startsWith('http') ? config.url : config.baseURL + config.url;
+//         const path = new URL(fullUrl).pathname;
+
+//         config.withCredentials = !publicPaths.includes(path);
+//         return config;
+//     },
+//     (error) => {
+//         console.error('Request error:', error);
+//         return Promise.reject(error);
+//     }
+// );
 axiosInstance.interceptors.request.use(
     (config) => {
-        let fullUrl = config.url.startsWith('http') ? config.url : config.baseURL + config.url;
-        const path = new URL(fullUrl).pathname;
+        config.withCredentials = true;
 
-        config.withCredentials = !publicPaths.includes(path);
+        const csrfToken = getCookie("csrftoken");
+        if (csrfToken) {
+            config.headers["X-CSRFToken"] = csrfToken;
+        }
+
         return config;
     },
-    (error) => {
-        console.error('Request error:', error);
-        return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
 );
+
 
 
 // Response interceptor

@@ -33,6 +33,8 @@ const theme = createTheme({
   },
 });
 
+const publicPaths = ["/", "/login", "/register", "/account-suspended"];
+
 function App() {
   const mode = window.localStorage.getItem('toolpad-mode');
   const { user, loading } = useContext(AuthContext);
@@ -43,6 +45,20 @@ function App() {
     window.scrollTo(0, 0);
     setLoadingPage(false);
   }, [location]);
+
+  useEffect(() => {
+    const currentPath = location.pathname;
+  
+    if (!publicPaths.includes(currentPath)) {
+      axiosInstance.get("/users/check-auth/")
+        .then((res) => {
+          console.log("✅ Authenticated:", res.data);
+        })
+        .catch((err) => {
+          console.warn("❌ Not authenticated:", err);
+        });
+    }
+  }, [location.pathname]);
 
   if (loading) return <MainLoading />;
   return (
