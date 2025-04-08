@@ -170,6 +170,7 @@ function Row(props) {
                                             {row.videos.map((video, i) => {
                                                 const handleSwap = async (direction) => {
                                                     try {
+                                                        props.setLoadingDelete(true);
                                                         const response = await axiosInstance.post(
                                                             `/api/admin/video/${video.id}/swap-priority/`,
                                                             { direction },
@@ -180,7 +181,7 @@ function Row(props) {
                                                         }
                                                     } catch (error) {
                                                         props.handleClickVariant('لقد حدث خطأ', 'error');
-                                                    } finally{setOpen(true)};
+                                                    } finally{setOpen(true);props.setLoadingDelete(false);};
                                                 };
                                                 return (
                                                     <TableRow key={video.id}>
@@ -190,6 +191,7 @@ function Row(props) {
                                                                     onClick={() => handleSwap('up')}
                                                                     disabled={video.priority === 1}
                                                                     color="primary"
+                                                                    title='تحريك لأعلي'
                                                                 >
                                                                     <ArrowUpwardIcon />
                                                                 </IconButton>
@@ -197,6 +199,7 @@ function Row(props) {
                                                                     onClick={() => handleSwap('down')}
                                                                     disabled={video.priority === row.videos.length}
                                                                     color="primary"
+                                                                    title='تحريك لأسفل'
                                                                 >
                                                                     <ArrowDownwardIcon />
                                                                 </IconButton>
@@ -397,6 +400,7 @@ export default function AllCourses() {
                                             setAlertOpenedNow={setAlertOpenedNow}
                                             getCourses={getCourses}
                                             handleClickVariant={handleClickVariant}
+                                            setLoadingDelete={setLoadingDelete}
                                         />
                                     ))}
                                     {emptyRows > 0 && (
