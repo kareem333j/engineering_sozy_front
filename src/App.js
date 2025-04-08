@@ -26,6 +26,7 @@ import MainLoading from './component/progress/MainLoading';
 import { Error404 } from './component/no-data/Error404';
 import AccountSuspended from './component/user/AccountSuspended';
 import { AddSubscription } from './component/users/AddSubscription';
+import axiosInstance from './Axios';
 
 const theme = createTheme({
   typography: {
